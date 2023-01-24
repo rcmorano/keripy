@@ -10,30 +10,36 @@ from didcomm.common.resolvers import ResolversConfig, SecretsResolver
 from didcomm.pack_encrypted import pack_encrypted, PackEncryptedConfig
 
 from typing import Optional, List
+from pprint import pp
 import pysodium
 import base64
 import json
 import asyncio
 
+
 '''
 Proof of concept of DIDComm packing and unpacking with did:keri
 - Use SICPA didcomm-python library
 - Authcryypt message
-- Ed25519 and X25519 keys
-- TO DEFINE: how to pass the serviceEndpoint and public encryption key (DID Doc resolution)
+- AID is Ed25519 and derive X25519 keys from same private
+- Non transferable AID (no key rotations)
+- TO DEFINE: how to pass the serviceEndpoint and public encryption key (DID Doc resolution) --> OOBI?
 '''
 
 
 def createKeriDid():
     salt = coring.Salter()
-    signerEd25519 = salt.signer(transferable=True, temp=True)
+    signerEd25519 = salt.signer(transferable=False, temp=True)
 
     X25519_pubkey = pysodium.crypto_sign_pk_to_box_pk(signerEd25519.verfer.raw)
     X25519_pubkey_qb64 = ('C'+base64.b64encode(X25519_pubkey).decode('utf-8'))[:-1]
 
     serder = eventing.incept(
         keys=[signerEd25519.verfer.qb64], 
-        data=[{"e":X25519_pubkey_qb64}], 
+        data=[
+                {"e":X25519_pubkey_qb64},
+                {"se": "https://example.coom/"}
+            ], 
         code=coring.MtrDex.Blake3_256 # code is for self-addressing
     )
 
@@ -83,8 +89,8 @@ class DidKeriResolver(DIDResolver):
         self._store = store
     async def resolve(self, did: DID) -> DIDDoc:
 
-        # This is a hack. Alice needs a way to get the KED (or DID Doc) from Bob's DID
-        # OOBI? URL request?
+        # This is a hack. Alice needs a way to get the KED (or DID Doc) from Bob's DID, and also the serviceEndpoint
+        # OOBI? URL query parameter? DIDComm message?
         ked = self._store[did]['serder'].ked
 
         return DIDDoc(
@@ -113,9 +119,9 @@ class DidKeriResolver(DIDResolver):
 if __name__ == "__main__":
 
     alice = createKeriDid()
-    print("Alice's DID:", alice['did'])
+    print("Alice's DID:", alice['did'],"\n")
     bob = createKeriDid()
-    print("Bob's DID:", bob['did'])
+    print("Bob's DID:", bob['did'],"\n")
 
     store = {
         alice['did']: alice,
@@ -131,7 +137,7 @@ if __name__ == "__main__":
         type = "https://didcomm.org/basicmessage/2.0/message",
         body = {'content': 'Hello Bob!'},
     )
-    print('1-Alice creates a basic message')
+    print('1-Alice creates a basic message:',alice_message.body,"\n")
 
     # Alice encrypts the message for Bob
     alice_message_packed = asyncio.run( pack_encrypted(
@@ -145,7 +151,8 @@ if __name__ == "__main__":
         sign_frm = None,
         pack_config = PackEncryptedConfig(protect_sender_id=False)
     ))
-    print('2-Alice encrypts the message for Bob')
+    print('2-Alice encrypts the message for Bob:')
+    print(alice_message_packed.packed_msg,"\n")
 
     # Bob decrypts the message
     bob_message_unpacked = asyncio.run( unpack(
@@ -155,4 +162,10 @@ if __name__ == "__main__":
         ),
         packed_msg= alice_message_packed.packed_msg
     ))
-    print('3-Bob decrypts the message:', bob_message_unpacked.message.body)
+    print('3-Bob decrypts the message:', bob_message_unpacked.message.body,"\n")
+
+    # print("##########################################################","\n")
+    # pp(alice['serder'].ked)
+    # print("\n")
+    # print(alice['did'],"\n")
+    # print(alice['did']+'?kel='+base64.urlsafe_b64encode(bytes(json.dumps(alice['serder'].ked), 'utf-8')).decode('utf-8'))
