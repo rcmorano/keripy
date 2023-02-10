@@ -29,7 +29,7 @@ Proof of concept of DIDComm packing and unpacking with did:keri
 
 def createKeriDid():
     salt = coring.Salter()
-    signerEd25519 = salt.signer(transferable=False, temp=True)
+    signerEd25519 = salt.signer(transferable=True, temp=True)
 
     X25519_pubkey = pysodium.crypto_sign_pk_to_box_pk(signerEd25519.verfer.raw)
     X25519_pubkey_qb64 = ('C'+base64.b64encode(X25519_pubkey).decode('utf-8'))[:-1]
@@ -164,8 +164,17 @@ if __name__ == "__main__":
     ))
     print('3-Bob decrypts the message:', bob_message_unpacked.message.body,"\n")
 
-    # print("##########################################################","\n")
-    # pp(alice['serder'].ked)
-    # print("\n")
-    # print(alice['did'],"\n")
-    # print(alice['did']+'?kel='+base64.urlsafe_b64encode(bytes(json.dumps(alice['serder'].ked), 'utf-8')).decode('utf-8'))
+
+
+    print("##########################################################","\n")
+    pp(alice['serder'].ked)
+    print("\n")
+    print(alice['did'],"\n")
+    kelb64 = base64.urlsafe_b64encode(bytes(json.dumps(alice['serder'].ked), 'utf-8')).decode('utf-8')
+    print(alice['did']+'?kel='+kelb64,"\n")
+
+    # VALIDATION
+    kel_decoded = json.loads(base64.urlsafe_b64decode(kelb64))
+    prefixer = coring.Prefixer(ked=kel_decoded)
+    print(prefixer.qb64b.decode("utf-8"))
+    print(prefixer.qb64b.decode("utf-8") == alice['did'].split(':')[2])
