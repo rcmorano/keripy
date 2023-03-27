@@ -2,6 +2,8 @@
 # 1. Run start_backer.sh in a terminal and wait for "Baker ready"
 # 2. Run this script in a second terminal passing two parameters: backer's prefix and backer's cardano address
 
+BACKER_URL=${BACKER_URL:-http://localhost:5666}
+
 function isSuccess() {
     ret=$?
     if [ $ret -ne 0 ]; then
@@ -24,7 +26,7 @@ echo '{
 kli init --name test  --nopasscode --salt 0ACDEyMzQ1Njc4OWxtbm9aBc
 isSuccess
 
-kli oobi resolve --name test  --oobi-alias backer --oobi http://127.0.0.1:5666/oobi/${1}/controller
+kli oobi resolve --name test  --oobi-alias backer --oobi ${BACKER_URL}/oobi/${1}/controller
 isSuccess
 
 kli incept --name test  --alias trans --file ./agent_config.json
