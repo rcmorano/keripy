@@ -1,10 +1,13 @@
+#!/bin/bash
+#
 # Steps to run this demos:
 # 1. Run start_backer.sh in a terminal and wait for "Baker ready"
 # 2. Run this script in a second terminal passing two parameters: backer's prefix and backer's cardano address
 
 # replace $(pwd) with the folder of your choice
-CONFIG_DIR=$(pwd)
-STORE_DIR=$(pwd)/store
+CONFIG_DIR=${CONFIG_DIR:-$PWD}
+STORE_DIR=${CONFIG_DIR}/store
+BACKER_URL=${BACKER_URL:-http://localhost:5666}
 
 function isSuccess() {
     ret=$?
@@ -36,7 +39,7 @@ echo '{
 kli init --name test  --nopasscode --salt 0ACDEyMzQ1Njc4OWxtbm9aBc --base $STORE_DIR 
 isSuccess
 
-kli oobi resolve --name test  --oobi-alias backer --base $STORE_DIR  --oobi http://127.0.0.1:5666/oobi/${1}/controller
+kli oobi resolve --name test  --oobi-alias backer --base $STORE_DIR --oobi ${BACKER_URL}/oobi/${1}/controller
 isSuccess
 
 kli incept --name test  --alias trans --base $STORE_DIR --file $CONFIG_DIR/agent_config.json

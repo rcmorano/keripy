@@ -1,4 +1,8 @@
-CONFIG_DIR=$(pwd)
+#!/bin/bash
+
+CONFIG_DIR=${WITROOTS_CONFIG_DIR:-$PWD}
+BACKER_CONFIG_FILE=${BACKER_CONFIG_FILE:-$CONFIG_DIR/keri/cf/backer.json}
+WITROOT_CONFIG_FILE=${WITROOT_CONFIG_FILE:-$CONFIG_DIR/witroot-config.json}
 
 mkdir -p $CONFIG_DIR/keri/cf
 echo '{
@@ -10,7 +14,7 @@ echo '{
     "iurls": [
     ]
   }
-  ' > $CONFIG_DIR/keri/cf/witroot.json
+  ' > $BACKER_CONFIG_FILE
 echo '{
     "transferable": false,
     "wits": [],
@@ -18,10 +22,11 @@ echo '{
     "ncount": 1,
     "isith": "1",
     "nsith": "1"
-  }' > $CONFIG_DIR/witroot_cfg.json
+  }' > $WITROOT_CONFIG_FILE
 
-kli init --name witroot --nopasscode  --config-dir $CONFIG_DIR --config-file witroot
 
-kli incept --name witroot --alias witroot --config $CONFIG_DIR --file witroot_cfg.json
+kli init --name witroot --nopasscode --config-dir ${CONFIG_DIR} --config-file ${BACKER_CONFIG_FILE}
+
+kli incept --name witroot --alias witroot --config ${CONFIG_DIR} --file ${WITROOT_CONFIG_FILE}
 
 kli backer start --name witroot --alias witroot -H 5666 -T 5665 --ledger cardano
