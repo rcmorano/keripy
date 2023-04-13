@@ -7,7 +7,8 @@
 # replace $(pwd) with the folder of your choice
 CONFIG_DIR=${CONFIG_DIR:-$PWD}
 STORE_DIR=${CONFIG_DIR}/store
-BACKER_URL=${BACKER_URL:-http://localhost:5666}
+BACKER_HOST=${BACKER_HOST:-localhost}
+BACKER_URL=${BACKER_URL:-http://$BACKER_HOST:5666}
 
 function isSuccess() {
     ret=$?
