@@ -8,7 +8,22 @@
 CONFIG_DIR=${CONFIG_DIR:-$PWD}
 STORE_DIR=${CONFIG_DIR}/store
 BACKER_HOST=${BACKER_HOST:-localhost}
-BACKER_URL=${BACKER_URL:-http://$BACKER_HOST:5666}
+BACKER_URL=${BACKER_URL:-http://localhost:5666}
+
+BACKER_CONFIG_FILE=${PWD}/keri/cf/witroot.json
+
+mkdir -p $PWD/keri/cf
+cat > $BACKER_CONFIG_FILE <<EOF
+{
+  "witroot": {
+    "dt": "2022-01-20T12:57:59.823350+00:00",
+    "curls": ["tcp://${BACKER_HOST}:5665/", "${BACKER_URL}"]
+  },
+  "dt": "2022-01-20T12:57:59.823350+00:00",
+  "iurls": [
+  ]
+}
+EOF
 
 function isSuccess() {
     ret=$?
